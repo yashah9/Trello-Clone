@@ -42,6 +42,10 @@ export const createTask = async (
     authorUserId,
     assignedUserId,
   } = req.body;
+  if (typeof title !== "string" || title.trim() === "") {
+    res.status(400).json({ message: "The 'title' field is required and must be a non-empty string." });
+    return;
+  }
   try {
     const newTask = await prisma.task.create({
       data: {

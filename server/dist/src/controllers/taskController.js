@@ -37,6 +37,10 @@ const getTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getTasks = getTasks;
 const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { title, description, status, priority, tags, startDate, dueDate, points, projectId, authorUserId, assignedUserId, } = req.body;
+    if (typeof title !== "string" || title.trim() === "") {
+        res.status(400).json({ message: "The 'title' field is required and must be a non-empty string." });
+        return;
+    }
     try {
         const newTask = yield prisma.task.create({
             data: {
