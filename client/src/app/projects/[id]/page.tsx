@@ -1,42 +1,46 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProjectHeader from "@/app/projects/ProjectHeader";
 import Board from "../BoardView";
 import List from "../ListView";
 import Timeline from "../Timeline";
-import Table from "../TableView"
+import Table from "../TableView";
+import ModalNewTask from "@/components/ModalNewTask";
 
 type Props = {
-  params: Promise<{ id: string }>; // Update the type to indicate `params` is a Promise
+  params: Promise<{ id: string }> | { id: string };
 };
 
 const Project = ({ params }: Props) => {
-  const [unwrappedParams, setUnwrappedParams] = useState<{ id: string } | null>(
-    null
-  );
+  const [id, setId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("Board");
   const [isModalNewTaskOpen, setIsModalNewTaskOpen] = useState(false);
 
   useEffect(() => {
-    const fetchParams = async () => {
-      const resolvedParams = await params; // Wait for the `params` Promise to resolve
-      setUnwrappedParams(resolvedParams); // Save the resolved params in state
+    const resolveParams = async () => {
+      if (params instanceof Promise) {
+        const resolvedParams = await params;
+        setId(resolvedParams.id);
+      } else {
+        setId(params.id);
+      }
     };
 
-    fetchParams();
+    resolveParams();
   }, [params]);
 
-  if (!unwrappedParams) {
-    // Render a loading state until params are resolved
-    return <div>Loading...</div>;
+  if (!id) {
+    return <div>Loading...</div>; // Loading state while `id` is being resolved
   }
-
-  const { id } = unwrappedParams;
 
   return (
     <div>
-      {/* MODAL NEW TASKS */}
+      <ModalNewTask
+        isOpen={isModalNewTaskOpen}
+        onClose={() => setIsModalNewTaskOpen(false)}
+        id={id}
+      />
       <ProjectHeader activeTab={activeTab} setActiveTab={setActiveTab} />
       {activeTab === "Board" && (
         <Board id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />
@@ -51,7 +55,7 @@ const Project = ({ params }: Props) => {
         <Table id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />
       )}
     </div>
-  );  
+  );
 };
 
 export default Project;
